@@ -6,6 +6,7 @@ module Rack
     DEFAULT_TIME_ZONE    = 'Europe/Moscow'
     DEFAULT_AS_TIME_ZONE = 'Moscow'
     DEFAULT_KEY          = 'dummy.time_zone'
+    DEFAULT_COOKIE_KEY   =  DEFAULT_KEY
 
     attr_reader :app, :runner, :options
 
@@ -15,7 +16,8 @@ module Rack
       @options = {}
       options[:default_tz]    = opts.fetch(:default_tz, DEFAULT_TIME_ZONE)
       options[:default_as_tz] = opts.fetch(:default_as_tz, DEFAULT_AS_TIME_ZONE)
-      options[:default_key]   = opts.fetch(:default_key, DEFAULT_KEY)
+      options[:time_zone_key] = opts.fetch(:time_zone_key, DEFAULT_KEY)
+      options[:cookie_key]    = opts.fetch(:cookie_key, DEFAULT_COOKIE_KEY)
 
       if block_given?
         @runner = block
@@ -38,8 +40,8 @@ module Rack
     def _call(mw, env)
       request = ::Rack::Request.new(env)
 
-      time_zone = request.cookies[mw.options[:default_key]] || mw.options[:default_tz]
-      env[mw.options[:default_key]] = mw.find_as_time_zone(time_zone)
+      time_zone = request.cookies[mw.options[:cookie_key]] || mw.options[:default_tz]
+      env[mw.options[:time_zone_key]] = mw.find_as_time_zone(time_zone)
 
       mw.app.call(env)
     end

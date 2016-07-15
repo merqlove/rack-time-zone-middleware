@@ -96,7 +96,7 @@ describe 'Rack::TimeZoneMiddleware' do
       def request_for_request_with_cookies(cookie_time_zone, key='dummy.time_zone')
         env = Rack::MockRequest.env_for('/')
         env['HTTP_COOKIE'] = "#{key}=#{cookie_time_zone}"
-        Rack::TimeZoneMiddleware.new(app, default_key: key).call(env).last
+        Rack::TimeZoneMiddleware.new(app, time_zone_key: key, cookie_key: key).call(env).last
       end
     end
 
@@ -153,7 +153,8 @@ describe 'Rack::TimeZoneMiddleware' do
       def request_for_request_with_cookies(cookie_time_zone, key='dummy.time_zone')
         env = Rack::MockRequest.env_for('/')
         env['HTTP_COOKIE'] = "#{key}=#{cookie_time_zone}"
-        Rack::TimeZoneMiddleware.new(app, default_tz: 'Europe/Paris', default_as_tz: 'Paris', default_key: key).call(env).last
+        Rack::TimeZoneMiddleware.new(app, default_tz: 'Europe/Paris', default_as_tz: 'Paris',
+                                          time_zone_key: key, cookie_key: key).call(env).last
       end
     end
   end

@@ -7,9 +7,10 @@
 
 Adding ability to detect timezone at UI side and get it within Rack/Rails via cookies with/o custom handler.
 
-This gem created for usecase of loading predefined TimeZone into Rails environment.  
+This gem created for usecase of loading detected TimeZone into Rails environment.  
 You can set cookie with TimeZone name at UI side(from Angular, React, Ember, Backbone or vanilla JS).  
-After that all XHR requests to your Rails/Rack backend will be fetched with this Middleware. 
+After that all XHR requests to your Rails/Rack backend can be identified by this Middleware.  
+In case when TimeZone name(s) is unsupported or key not found in cookies, middleware will fallback to defaults.
 
 ## Installation
 
@@ -38,7 +39,10 @@ require 'rack/time-zone-middleware'
 use Rack::TimeZoneMiddleware
 
 # Configured TimeZone handler.
-use Rack::TimeZoneMiddleware default_tz: 'Europe/Moscow', default_as_tz: 'Moscow', default_key: 'dummy.time_zone'
+use Rack::TimeZoneMiddleware, default_tz: 'Europe/Moscow', 
+                              default_as_tz: 'Moscow', 
+                              time_zone_key: 'dummy.time_zone'
+                              cookie_key: 'dummy.time_zone'
 
 # Your own TimeZone handler. All options & instance methods is available through middleware parameter.
 use Rack::TimeZoneMiddleware do |middleware, env|
@@ -58,7 +62,10 @@ end
 config.middleware.use Rack::TimeZoneMiddleware
 
 # Configured TimeZone handler.
-config.middleware.use Rack::TimeZoneMiddleware default_tz: 'Europe/Moscow', default_as_tz: 'Moscow', default_key: 'dummy.time_zone'
+config.middleware.use Rack::TimeZoneMiddleware, default_tz: 'Europe/Moscow', 
+                                                default_as_tz: 'Moscow', 
+                                                time_zone_key: 'dummy.time_zone'
+                                                cookie_key: 'dummy.time_zone'
 
 # Your own TimeZone handler. All options & instance methods is available through middleware parameter.
 config.middleware.use Rack::TimeZoneMiddleware do |middleware, env|
@@ -75,9 +82,25 @@ end
 
 | name  | description |
 |---|---|
-| default_tz | Default TimeZone for fallback(default: 'Europe/Moscow') |
-| default_as_tz | Default `ActiveSupport::TimeZone` fallback key(default: 'Moscow') |
-| default_key | Default cookie and environment keys(default: 'dummy.time_zone') |
+| default_tz | TimeZone name fallback value (default: 'Europe/Moscow') |
+| default_as_tz | `ActiveSupport::TimeZone` key name fallback value (default: 'Moscow') |
+| cookie_key | Cookie key name (default: 'dummy.time_zone') |
+| time_zone_key | Environment key name (default: 'dummy.time_zone') |
+
+## AngularJS TimeZone updater factory example via [JsTz](http://pellepim.bitbucket.org/jstz/)
+
+```javascript
+web.services.factory('JsTz', ['ipCookie', function(ipCookie) {
+  return {
+    updateCookie: function() {
+      tz = jstz.determine();
+      name = tz.name(); 
+      ipCookie('dummy.time_zone', name, { path: '/', expires: 21 });
+      return name;
+    }
+  };  
+}]);
+```
 
 ## Dependencies:
 

@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.description   = %q{Adding ability to detect timezone at UI side and get it within Rack/Rails via cookies with/o custom handler.}
   spec.homepage      = 'https://github.com/merqlove/rack-time-zone-middleware'
 
-  spec.required_ruby_version = '>= 1.9.3'
+  spec.required_ruby_version = '>= 2.0.0'
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = 'exe'
@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'activesupport', '>= 4.0.0'
   spec.add_runtime_dependency 'rack', '>= 1.2.0'
 
-  spec.add_development_dependency 'bundler', '~> 1.12'
+  spec.add_development_dependency 'bundler', '~> 1.0'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'minitest', '~> 5.6'
 end

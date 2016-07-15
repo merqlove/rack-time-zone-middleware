@@ -1,0 +1,12 @@
+language: ruby
+rvm:
+  - 2.3.1
+  - 2.2.2
+  - 2.1.6
+  - jruby-9.0.0.0
+notifications:
+  email:
+    - api@mrcr.ru
+script:
+    - bundle exec rake
+sudo: false

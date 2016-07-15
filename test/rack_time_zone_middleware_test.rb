@@ -1,3 +1,6 @@
+require 'coveralls'
+Coveralls.wear!
+
 require 'minitest/autorun'
 require 'rack/mock'
 require 'rack/time_zone_middleware'
@@ -106,7 +109,7 @@ describe 'Rack::TimeZoneMiddleware' do
         Rack::TimeZoneMiddleware.new(app) do |mw, _env|
           request = ::Rack::Request.new(_env)
 
-          time_zone = request&.cookies[key] || mw.options[:default_tz]
+          time_zone = request.cookies[key] || mw.options[:default_tz]
           _env[key] = mw.find_as_time_zone(time_zone)
 
           mw.app.call(_env)
@@ -159,7 +162,7 @@ describe 'Rack::TimeZoneMiddleware' do
 
   def check_time_zone(cookie_time_zone, time_zone, key='dummy.time_zone')
     request = request_for_request_with_cookies(cookie_time_zone, key)
-    expect(request&.env).must_include key
-    expect(request&.env[key]).must_equal time_zone
+    expect(request.env).must_include key
+    expect(request.env[key]).must_equal time_zone
   end
 end

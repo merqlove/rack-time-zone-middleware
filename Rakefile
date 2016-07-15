@@ -2,7 +2,7 @@ require 'bundler/gem_tasks'
 
 begin
   Bundler.setup(:default, :development)
-rescue Bundler::BundlerError => ex
+rescue Bundler::BundlerError => _
   $stderr.puts e.message
   $stderr.puts 'Run `bundle install` to install missing gems'
   exit e.status_code
@@ -16,5 +16,6 @@ task :default => [:test]
 desc 'Run specs'
 Rake::TestTask.new do |t|
   t.libs << 'test'
+  t.verbose = true
   t.test_files = FileList['test/*_test.rb']
 end

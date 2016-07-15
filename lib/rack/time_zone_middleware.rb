@@ -38,7 +38,7 @@ module Rack
     def _call(mw, env)
       request = ::Rack::Request.new(env)
 
-      time_zone = request&.cookies[mw.options[:default_key]] || mw.options[:default_tz]
+      time_zone = request.cookies[mw.options[:default_key]] || mw.options[:default_tz]
       env[mw.options[:default_key]] = mw.find_as_time_zone(time_zone)
 
       mw.app.call(env)

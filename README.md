@@ -1,5 +1,10 @@
 # Rack::TimeZoneMiddleware
 
+[![Gem Version](https://badge.fury.io/rb/rack-time-zone-middleware.svg)](https://badge.fury.io/rb/rack-time-zone-middleware)
+[![Build Status](https://travis-ci.org/merqlove/rack-time-zone-middleware.svg?branch=master)](https://travis-ci.org/merqlove/rack-time-zone-middleware)
+[![Coverage Status](https://coveralls.io/repos/github/merqlove/rack-time-zone-middleware/badge.svg?branch=master)](https://coveralls.io/github/merqlove/rack-time-zone-middleware?branch=master)
+[![Code Climate](https://codeclimate.com/github/merqlove/rack-time-zone-middleware/badges/gpa.svg)](https://codeclimate.com/github/merqlove/rack-time-zone-middleware)
+
 Adding ability to detect timezone at UI side and get it within Rack/Rails via cookies with/o custom handler.
 
 This gem created for usecase of loading predefined TimeZone into Rails environment.  

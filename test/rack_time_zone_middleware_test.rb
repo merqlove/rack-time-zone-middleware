@@ -3,7 +3,7 @@ Coveralls.wear!
 
 require 'minitest/autorun'
 require 'rack/mock'
-require 'rack/time_zone_middleware'
+require 'rack/time-zone-middleware'
 require 'active_support/concern'
 
 describe 'Rack::TimeZoneMiddleware' do

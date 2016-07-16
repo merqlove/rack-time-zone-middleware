@@ -5,6 +5,8 @@ require 'minitest/autorun'
 require 'rack/mock'
 require 'rack/time-zone-middleware'
 require 'active_support/concern'
+require 'active_support/values/time_zone'
+require 'minitest/byebug' if ENV['DEBUG']
 
 describe 'Rack::TimeZoneMiddleware' do
   module TestCall
@@ -49,43 +51,51 @@ describe 'Rack::TimeZoneMiddleware' do
     lambda { |env| [200, {'Content-Type' => 'text/plain'}, Rack::Request.new(env)] }
   end
 
-  describe '#find_as_time_zone' do
-    subject { Rack::TimeZoneMiddleware.new(app) }
-
-    it 'Copenhagen' do
-      expect(subject.find_as_time_zone('Europe/Copenhagen')).must_equal 'Copenhagen'
+  describe '#time_zone_map' do
+    def subject_with_map(map)
+      Rack::TimeZoneMiddleware.new(app, time_zone_map: map)
     end
 
-    it 'Paris' do
-      expect(subject.find_as_time_zone('Europe/Paris')).must_equal 'Paris'
+    it 'Default map object' do
+      middleware = subject_with_map(nil)
+      expect(middleware.send(:time_zone_map)).must_equal ActiveSupport::TimeZone::MAPPING
+      expect(middleware.find_as_time_zone('Australia/Melbourne')).must_equal 'Canberra'
     end
 
-    it 'Moscow' do
-      expect(subject.find_as_time_zone('Europe/Moscow')).must_equal 'Moscow'
+    it 'Wrong map object' do
+      middleware = subject_with_map('Europe/Copenhagen')
+      expect(middleware.send(:time_zone_map)).must_equal 'Europe/Copenhagen'
+      expect(middleware.find_as_time_zone('Australia/Melbourne')).must_equal 'Moscow'
     end
 
-    it 'Stockholm' do
-      expect(subject.find_as_time_zone('Europe/Stockholm')).must_equal 'Stockholm'
+    it 'Wrong lambda' do
+      middleware = subject_with_map(-> { 'Europe/Copenhagen' })
+      expect(middleware.send(:time_zone_map)).must_equal 'Europe/Copenhagen'
+      expect(middleware.find_as_time_zone('Australia/Melbourne')).must_equal 'Moscow'
     end
 
-    it 'Tashkent' do
-      expect(subject.find_as_time_zone('Asia/Tashkent')).must_equal 'Tashkent'
+    it 'Good but empty map object' do
+      middleware = subject_with_map({})
+      expect(middleware.send(:time_zone_map)).must_equal({})
+      expect(middleware.find_as_time_zone('Australia/Melbourne')).must_equal 'Moscow'
     end
 
-    it 'Hong Kong' do
-      expect(subject.find_as_time_zone('Asia/Hong_Kong')).must_equal 'Hong Kong'
+    it 'Good filled map object' do
+      middleware = subject_with_map(ActiveSupport::TimeZone::MAPPING)
+      expect(middleware.send(:time_zone_map)).must_equal(ActiveSupport::TimeZone::MAPPING)
+      expect(middleware.find_as_time_zone('Australia/Melbourne')).must_equal 'Canberra'
     end
 
-    it 'Kamchatka' do
-      expect(subject.find_as_time_zone('Asia/Kamchatka')).must_equal 'Kamchatka'
+    it 'Good but empty lambda' do
+      middleware = subject_with_map(-> { {a: 1+2, b: 2+3 } })
+      expect(middleware.send(:time_zone_map)).must_equal({a: 3, b: 5})
+      expect(middleware.find_as_time_zone('Australia/Melbourne')).must_equal 'Moscow'
     end
 
-    it 'Canberra' do
-      expect(subject.find_as_time_zone('Australia/Melbourne')).must_equal 'Canberra'
-    end
-
-    it 'America/Chicago' do
-      expect(subject.find_as_time_zone('America/Chicago')).must_equal 'Central Time (US & Canada)'
+    it 'Good filled lambda' do
+      middleware = subject_with_map(-> { ActiveSupport::TimeZone::MAPPING })
+      expect(middleware.send(:time_zone_map)).must_equal(ActiveSupport::TimeZone::MAPPING)
+      expect(middleware.find_as_time_zone('Australia/Melbourne')).must_equal 'Canberra'
     end
   end
 
@@ -165,5 +175,59 @@ describe 'Rack::TimeZoneMiddleware' do
     request = request_for_request_with_cookies(cookie_time_zone, key)
     expect(request.env).must_include key
     expect(request.env[key]).must_equal time_zone
+  end
+
+  describe '#find_as_time_zone' do
+    subject { Rack::TimeZoneMiddleware.new(app) }
+
+    it 'Copenhagen' do
+      expect(subject.find_as_time_zone('Europe/Copenhagen')).must_equal 'Copenhagen'
+    end
+
+    it 'Paris' do
+      expect(subject.find_as_time_zone('Europe/Paris')).must_equal 'Paris'
+    end
+
+    it 'Moscow' do
+      expect(subject.find_as_time_zone('Europe/Moscow')).must_equal 'Moscow'
+    end
+
+    it 'Stockholm' do
+      expect(subject.find_as_time_zone('Europe/Stockholm')).must_equal 'Stockholm'
+    end
+
+    it 'Tashkent' do
+      expect(subject.find_as_time_zone('Asia/Tashkent')).must_equal 'Tashkent'
+    end
+
+    it 'Hong Kong' do
+      expect(subject.find_as_time_zone('Asia/Hong_Kong')).must_equal 'Hong Kong'
+    end
+
+    it 'Kamchatka' do
+      expect(subject.find_as_time_zone('Asia/Kamchatka')).must_equal 'Kamchatka'
+    end
+
+    it 'Canberra' do
+      expect(subject.find_as_time_zone('Australia/Melbourne')).must_equal 'Canberra'
+    end
+
+    it 'America/Chicago' do
+      expect(subject.find_as_time_zone('America/Chicago')).must_equal 'Central Time (US & Canada)'
+    end
+  end
+
+  describe '#default_time_zone_map' do
+    it 'with warning' do
+      middleware = Rack::TimeZoneMiddleware.new(app, time_zone_map: nil)
+      expect(middleware.send(:default_time_zone_map, false).call).must_equal({})
+      -> { middleware.send(:default_time_zone_map, false) }.must_output(nil, Rack::TimeZoneMiddleware::MAP_WARNING+"\n")
+    end
+
+    it 'without warning' do
+      middleware = Rack::TimeZoneMiddleware.new(app, time_zone_map: nil)
+      expect(middleware.send(:default_time_zone_map, true).call).must_equal(ActiveSupport::TimeZone::MAPPING)
+      -> { middleware.send(:default_time_zone_map, true) }.must_be_silent
+    end
   end
 end

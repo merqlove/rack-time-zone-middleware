@@ -28,6 +28,18 @@ Or install it yourself as:
 
     $ gem install rack-time-zone-middleware
 
+## Logic in detail
+
+1. UI
+    1. Use something like [JsTz](http://pellepim.bitbucket.org/jstz/) to determine users time-zone. 
+    2. Write time-zone name to cookie.
+    3. [AngularJS Example](#angularjs)
+2. Ruby
+    1. Use one of loading ways explained below ([Usage](#usage)).
+    2. Provide cookie `key_name` with options, wich includes detected time-zone.
+    3. Provide enironment `key_name` with options, where you store its value.
+    4. Use `env['key_name']` to access saved value from your application or controller.
+  
 ## Usage
 
 ### Sinatra/Padrino application
@@ -78,16 +90,22 @@ config.middleware.use Rack::TimeZoneMiddleware do |middleware, env|
 end
 ```
 
+In theory you can setup dynamic TimeZones detector(when its hash is managed from your Application, from Admin panel or something),  
+but in most of realizations what i saw, it is overhead.
+
 ### Options
 
 | name  | description |
 |---|---|
-| default_tz | TimeZone name fallback value (default: 'Europe/Moscow') |
-| default_as_tz | `ActiveSupport::TimeZone` key name fallback value (default: 'Moscow') |
-| cookie_key | Cookie key name (default: 'dummy.time_zone') |
-| time_zone_key | Environment key name (default: 'dummy.time_zone') |
+| default_tz | `optional`, TimeZone name fallback value (default: 'Europe/Moscow') |
+| default_as_tz | `optional`, `ActiveSupport::TimeZone` key name fallback value (default: 'Moscow') |
+| cookie_key | `optional`, Cookie key name (default: 'dummy.time_zone') |
+| time_zone_key | `optional`, Environment key name (default: 'dummy.time_zone') |
+| time_zone_map | `optional`, TimeZone `Hash` or `lambda`, like `{'Moscow' => 'Europe/Moscow'}`. If not provided `ActiveSupport` TZInfo map will be tried. |
 
-## AngularJS TimeZone updater factory example via [JsTz](http://pellepim.bitbucket.org/jstz/)
+## AngularJS
+
+TimeZone updater factory example via [JsTz](http://pellepim.bitbucket.org/jstz/)
 
 ```javascript
 web.services.factory('JsTz', ['ipCookie', function(ipCookie) {
@@ -105,7 +123,7 @@ web.services.factory('JsTz', ['ipCookie', function(ipCookie) {
 ## Dependencies:
 
 - [Rack](https://github.com/rack/rack)
-- [ActiveSupport](https://github.com/rails/rails)
+- [ActiveSupport(optional)](https://github.com/rails/rails)
 
 ## Contributing
 

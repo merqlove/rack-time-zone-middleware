@@ -9,3 +9,7 @@
 /tmp/
 /.idea
 .ruby-version
+.irb_history
+.byebug_history
+/coverage/
+/test/coverage/

@@ -24,12 +24,11 @@ module Rack
 
       if block_given?
         @runner = block
-      else
-        @runner = ->(mw, env) { _call(mw, env) }
       end
     end
 
     def call(env)
+      return _call(env) unless runner.is_a?(Proc)
       runner.call(self, env)
     end
 
@@ -55,13 +54,13 @@ module Rack
       end
     end
 
-    def _call(mw, env)
+    def _call(env)
       request = ::Rack::Request.new(env)
 
-      time_zone = request.cookies[mw.options[:cookie_key]] || mw.options[:default_tz]
-      env[mw.options[:time_zone_key]] = mw.find_as_time_zone(time_zone)
+      time_zone = request.cookies[options[:cookie_key]] || options[:default_tz]
+      env[options[:time_zone_key]] = find_as_time_zone(time_zone)
 
-      mw.app.call(env)
+      @app.call(env)
     end
   end
 end

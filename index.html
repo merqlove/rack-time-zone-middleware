@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Rack::TimeZoneMiddleware by merqlove</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Rack::TimeZoneMiddleware</h1>
+      <h2 class="project-tagline">Middleware helpful in UseCase of detecting TimeZone at UI side and its getting within Rack/Rails app via cookies.</h2>
+      <a href="https://github.com/merqlove/rack-time-zone-middleware" class="btn">View on GitHub</a>
+      <a href="https://github.com/merqlove/rack-time-zone-middleware/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/merqlove/rack-time-zone-middleware/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <p><a href="https://badge.fury.io/rb/rack-time-zone-middleware"><img src="https://badge.fury.io/rb/rack-time-zone-middleware.svg" alt="Gem Version"></a>
+<a href="https://travis-ci.org/merqlove/rack-time-zone-middleware"><img src="https://travis-ci.org/merqlove/rack-time-zone-middleware.svg?branch=master" alt="Build Status"></a>
+<a href="https://coveralls.io/github/merqlove/rack-time-zone-middleware?branch=master"><img src="https://coveralls.io/repos/github/merqlove/rack-time-zone-middleware/badge.svg?branch=master" alt="Coverage Status"></a>
+<a href="https://codeclimate.com/github/merqlove/rack-time-zone-middleware"><img src="https://codeclimate.com/github/merqlove/rack-time-zone-middleware/badges/gpa.svg" alt="Code Climate"></a></p>
+
+<p>Adding ability to detect timezone at UI side and get it within Rack/Rails via cookies with/o custom handler.</p>
+
+<p>This gem created for usecase of loading detected TimeZone into Rails environment.<br>
+You can set cookie with TimeZone name at UI side(from Angular, React, Ember, Backbone or vanilla JS).<br>
+After that all XHR requests to your Rails/Rack backend can be identified by this Middleware.<br>
+In case when TimeZone name(s) is unsupported or key not found in cookies, middleware will fallback to defaults.</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Add this line to your application's Gemfile:</p>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-k">gem</span> <span class="pl-s"><span class="pl-pds">'</span>rack-time-zone-middleware<span class="pl-pds">'</span></span></pre></div>
+
+<p>And then execute:</p>
+
+<pre><code>$ bundle
+</code></pre>
+
+<p>Or install it yourself as:</p>
+
+<pre><code>$ gem install rack-time-zone-middleware
+</code></pre>
+
+<h2>
+<a id="logic-in-detail" class="anchor" href="#logic-in-detail" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Logic in detail</h2>
+
+<ol>
+<li>UI
+
+<ol>
+<li>Use something like <a href="http://pellepim.bitbucket.org/jstz/">JsTz</a> to determine users time-zone. </li>
+<li>Write time-zone name to cookie.</li>
+<li><a href="#angularjs">AngularJS Example</a></li>
+</ol>
+</li>
+<li>Ruby
+
+<ol>
+<li>Use one of loading ways explained below (<a href="#usage">Usage</a>).</li>
+<li>Provide cookie <code>key_name</code> with options, wich includes detected time-zone.</li>
+<li>Provide enironment <code>key_name</code> with options, where you store its value.</li>
+<li>Use <code>env['key_name']</code> to access saved value from your application or controller.</li>
+</ol>
+</li>
+</ol>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+
+<h3>
+<a id="sinatrapadrino-application" class="anchor" href="#sinatrapadrino-application" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Sinatra/Padrino application</h3>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-k">require</span> <span class="pl-s"><span class="pl-pds">'</span>rack/time-zone-middleware<span class="pl-pds">'</span></span>
+
+<span class="pl-c"># Default TimeZone handler.</span>
+use <span class="pl-c1">Rack</span>::<span class="pl-c1">TimeZoneMiddleware</span>
+
+<span class="pl-c"># Configured TimeZone handler.</span>
+use <span class="pl-c1">Rack</span>::<span class="pl-c1">TimeZoneMiddleware</span>, <span class="pl-c1">default_tz:</span> <span class="pl-s"><span class="pl-pds">'</span>Europe/Moscow<span class="pl-pds">'</span></span>, 
+                              <span class="pl-c1">default_as_tz:</span> <span class="pl-s"><span class="pl-pds">'</span>Moscow<span class="pl-pds">'</span></span>, 
+                              <span class="pl-c1">time_zone_key:</span> <span class="pl-s"><span class="pl-pds">'</span>dummy.time_zone<span class="pl-pds">'</span></span>
+                              <span class="pl-c1">cookie_key:</span> <span class="pl-s"><span class="pl-pds">'</span>dummy.time_zone<span class="pl-pds">'</span></span>
+
+<span class="pl-c"># Your own TimeZone handler. All options &amp; instance methods is available through middleware parameter.</span>
+use <span class="pl-c1">Rack</span>::<span class="pl-c1">TimeZoneMiddleware</span> <span class="pl-k">do </span>|<span class="pl-smi">middleware</span>, <span class="pl-smi">env</span>|
+  request <span class="pl-k">=</span> ::<span class="pl-c1">Rack</span>::<span class="pl-c1">Request</span>.<span class="pl-k">new</span>(env)
+
+  time_zone <span class="pl-k">=</span> request<span class="pl-k">&amp;</span>.cookies[<span class="pl-s"><span class="pl-pds">'</span>dummy.time_zone<span class="pl-pds">'</span></span>] <span class="pl-k">||</span> middleware.options[<span class="pl-c1">:default_tz</span>]
+  env[<span class="pl-s"><span class="pl-pds">'</span>dummy.time_zone<span class="pl-pds">'</span></span>] <span class="pl-k">=</span> middleware.find_as_time_zone(time_zone)
+
+  middleware.app.call(env)    
+<span class="pl-k">end</span></pre></div>
+
+<h3>
+<a id="rails-application" class="anchor" href="#rails-application" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Rails application</h3>
+
+<div class="highlight highlight-source-ruby"><pre><span class="pl-c"># Default TimeZone handler.</span>
+config.middleware.use <span class="pl-c1">Rack</span>::<span class="pl-c1">TimeZoneMiddleware</span>
+
+<span class="pl-c"># Configured TimeZone handler.</span>
+config.middleware.use <span class="pl-c1">Rack</span>::<span class="pl-c1">TimeZoneMiddleware</span>, <span class="pl-c1">default_tz:</span> <span class="pl-s"><span class="pl-pds">'</span>Europe/Moscow<span class="pl-pds">'</span></span>, 
+                                                <span class="pl-c1">default_as_tz:</span> <span class="pl-s"><span class="pl-pds">'</span>Moscow<span class="pl-pds">'</span></span>, 
+                                                <span class="pl-c1">time_zone_key:</span> <span class="pl-s"><span class="pl-pds">'</span>dummy.time_zone<span class="pl-pds">'</span></span>
+                                                <span class="pl-c1">cookie_key:</span> <span class="pl-s"><span class="pl-pds">'</span>dummy.time_zone<span class="pl-pds">'</span></span>
+
+<span class="pl-c"># Your own TimeZone handler. All options &amp; instance methods is available through middleware parameter.</span>
+config.middleware.use <span class="pl-c1">Rack</span>::<span class="pl-c1">TimeZoneMiddleware</span> <span class="pl-k">do </span>|<span class="pl-smi">middleware</span>, <span class="pl-smi">env</span>|
+  request <span class="pl-k">=</span> ::<span class="pl-c1">Rack</span>::<span class="pl-c1">Request</span>.<span class="pl-k">new</span>(env)
+
+  time_zone <span class="pl-k">=</span> request<span class="pl-k">&amp;</span>.cookies[<span class="pl-s"><span class="pl-pds">'</span>dummy.time_zone<span class="pl-pds">'</span></span>] <span class="pl-k">||</span> middleware.options[<span class="pl-c1">:default_tz</span>]
+  env[<span class="pl-s"><span class="pl-pds">'</span>dummy.time_zone<span class="pl-pds">'</span></span>] <span class="pl-k">=</span> middleware.find_as_time_zone(time_zone)
+
+  middleware.app.call(env)    
+<span class="pl-k">end</span></pre></div>
+
+<p>In theory you can setup dynamic TimeZones detector(when its hash is managed from your Application, from Admin panel or something),<br>
+but in most of realizations what i saw, it is overhead.</p>
+
+<h3>
+<a id="options" class="anchor" href="#options" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Options</h3>
+
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>default_tz</td>
+<td>
+<code>optional</code>, TimeZone name fallback value (default: 'Europe/Moscow')</td>
+</tr>
+<tr>
+<td>default_as_tz</td>
+<td>
+<code>optional</code>, <code>ActiveSupport::TimeZone</code> key name fallback value (default: 'Moscow')</td>
+</tr>
+<tr>
+<td>cookie_key</td>
+<td>
+<code>optional</code>, Cookie key name (default: 'dummy.time_zone')</td>
+</tr>
+<tr>
+<td>time_zone_key</td>
+<td>
+<code>optional</code>, Environment key name (default: 'dummy.time_zone')</td>
+</tr>
+<tr>
+<td>time_zone_map</td>
+<td>
+<code>optional</code>, TimeZone <code>Hash</code> or <code>lambda</code>, like <code>{'Moscow' =&gt; 'Europe/Moscow'}</code>. If not provided <code>ActiveSupport</code> TZInfo map will be tried.</td>
+</tr>
+</tbody>
+</table>
+
+<h2>
+<a id="angularjs" class="anchor" href="#angularjs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>AngularJS</h2>
+
+<p>TimeZone updater factory example via <a href="http://pellepim.bitbucket.org/jstz/">JsTz</a></p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">web</span>.<span class="pl-smi">services</span>.<span class="pl-en">factory</span>(<span class="pl-s"><span class="pl-pds">'</span>JsTz<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>ipCookie<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">ipCookie</span>) {
+  <span class="pl-k">return</span> {
+    <span class="pl-en">updateCookie</span><span class="pl-k">:</span> <span class="pl-k">function</span>() {
+      tz <span class="pl-k">=</span> <span class="pl-smi">jstz</span>.<span class="pl-en">determine</span>();
+      name <span class="pl-k">=</span> <span class="pl-smi">tz</span>.<span class="pl-c1">name</span>(); 
+      <span class="pl-en">ipCookie</span>(<span class="pl-s"><span class="pl-pds">'</span>dummy.time_zone<span class="pl-pds">'</span></span>, name, { path<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>/<span class="pl-pds">'</span></span>, expires<span class="pl-k">:</span> <span class="pl-c1">21</span> });
+      <span class="pl-k">return</span> name;
+    }
+  };  
+}]);</pre></div>
+
+<h2>
+<a id="dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dependencies:</h2>
+
+<ul>
+<li><a href="https://github.com/rack/rack">Rack</a></li>
+<li><a href="https://github.com/rails/rails">ActiveSupport(optional)</a></li>
+</ul>
+
+<h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributing</h2>
+
+<ol>
+<li>Fork it ( <a href="https://github.com/merqlove/rack-time-zone-middleware/fork">https://github.com/merqlove/rack-time-zone-middleware/fork</a> )</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create a new Pull Request</li>
+</ol>
+
+<p>Bug reports and pull requests are welcome on GitHub at <a href="https://github.com/merqlove/rack-time-zone-middleware">https://github.com/merqlove/rack-time-zone-middleware</a>.</p>
+
+<h3>
+<a id="testing" class="anchor" href="#testing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Testing</h3>
+
+<pre><code>$ rake test 
+</code></pre>
+
+<h2>
+<a id="development" class="anchor" href="#development" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Development</h2>
+
+<p>To install this gem onto your local machine, run <code>bundle exec rake install</code>. To release a new version, update the version number in <code>version.rb</code>, and then run <code>bundle exec rake release</code>, which will create a git tag for the version, push git commits and tags, and push the <code>.gem</code> file to <a href="https://rubygems.org">rubygems.org</a>.</p>
+
+<p>Copyright (c) 2016 Alexander Merkulov</p>
+
+<p>MIT License</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/merqlove/rack-time-zone-middleware">Rack::TimeZoneMiddleware</a> is maintained by <a href="https://github.com/merqlove">merqlove</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>

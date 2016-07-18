@@ -10,7 +10,9 @@ Adding ability to detect timezone at UI side and get it within Rack/Rails via co
 This gem created for usecase of loading detected TimeZone into Rails environment.  
 You can set cookie with TimeZone name at UI side(from Angular, React, Ember, Backbone or vanilla JS).  
 After that all XHR requests to your Rails/Rack backend can be identified by this Middleware.  
-In case when TimeZone name(s) is unsupported or key not found in cookies, middleware will fallback to defaults.
+In case when TimeZone name(s) is unsupported or key not found in cookies, middleware will fallback to defaults.  
+By default we are using [ActiveSupport TimeZones](https://github.com/rails/rails/blob/master/activesupport/lib/active_support/values/time_zone.rb#L30), if AS is not installed and you haven't provided someone else, you will got empty `TimeZone` hash with Warning message.  
+So we have no dependency on `ActiveSupport`, but we'd like to use it.
 
 ## Installation
 
